@@ -60,9 +60,13 @@ if st.button("Calculate Survival Forecast", type="primary"):
     # Plotly Survival Curve
     curve_df = result['survival_curve']
     fig = go.Figure()
+   # Convert survival curve cleanly to a 1D list/array
+    y_values = (curve_df.to_numpy().ravel() * 100).tolist()
+    x_timeline = list(curve_df.index)
+
     fig.add_trace(go.Scatter(
-        x=curve_df.index, 
-        y=curve_df.values.flatten() * 100,
+        x=x_timeline, 
+        y=y_values,
         mode='lines+markers',
         name='Survival Probability',
         line=dict(color='#0284c7', width=3)
