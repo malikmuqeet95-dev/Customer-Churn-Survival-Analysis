@@ -167,6 +167,21 @@ def test_prediction_output_structure(
     ) > 0
 
 
+def test_app_handles_list_of_dict_survival_curve():
+    import app
+
+    raw_curve = [
+        {"month": 0.0, "retention": 1.0},
+        {"month": 1.0, "retention": 0.93},
+        {"month": 2.0, "retention": 0.80},
+    ]
+
+    x_timeline, y_values = app.normalize_survival_curve(raw_curve)
+
+    assert x_timeline == [0.0, 1.0, 2.0]
+    assert y_values == [100.0, 93.0, 80.0]
+
+
 # ============================================================
 # TEST 3: FORECAST HORIZON
 # ============================================================

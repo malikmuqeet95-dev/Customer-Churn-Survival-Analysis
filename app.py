@@ -8,6 +8,58 @@ st.set_page_config(page_title="Churn Survival Intelligence", layout="wide")
 st.title("⚡ ChurnGuard: Customer Retention Survival AI")
 st.markdown("Dynamic Time-to-Event Survival Forecasting Engine")
 
+
+def normalize_survival_curve(raw_curve):
+    """Convert survival curve payloads into x/y arrays for Plotly."""
+    if isinstance(raw_curve, pd.DataFrame):
+        x_timeline = [float(idx) for idx in raw_curve.index]
+        y_values = [
+            float(val) * 100.0 if float(val) <= 1.0 else float(val)
+            for val in raw_curve.iloc[:, 0].values
+        ]
+        return x_timeline, y_values
+
+    if isinstance(raw_curve, dict):
+        if 'timeline' in raw_curve and 'survival_prob' in raw_curve:
+            x_timeline = [float(t) for t in raw_curve['timeline']]
+            y_values = [
+                float(p) * 100.0 if float(p) <= 1.0 else float(p)
+                for p in raw_curve['survival_prob']
+            ]
+            return x_timeline, y_values
+
+        if 'survival_curve' in raw_curve and isinstance(raw_curve['survival_curve'], list):
+            return normalize_survival_curve(raw_curve['survival_curve'])
+
+    if isinstance(raw_curve, list) and raw_curve and isinstance(raw_curve[0], dict):
+        x_timeline = []
+        y_values = []
+
+        for item in raw_curve:
+            if not isinstance(item, dict):
+                continue
+
+            month = item.get('month', item.get('time'))
+            retention = item.get('retention', item.get('survival_prob'))
+
+            if month is None or retention is None:
+                continue
+
+            x_timeline.append(float(month))
+            value = float(retention)
+            y_values.append(value * 100.0 if value <= 1.0 else value)
+
+        return x_timeline, y_values
+
+    raw_series = pd.Series(raw_curve)
+    x_timeline = [float(idx) for idx in raw_series.index]
+    y_values = [
+        float(val) * 100.0 if float(val) <= 1.0 else float(val)
+        for val in raw_series.values
+    ]
+    return x_timeline, y_values
+
+
 predictor = SurvivalPredictor()
 
 # Sidebar / Input Form
@@ -58,18 +110,18 @@ if st.button("Calculate Survival Forecast", type="primary"):
     st.info(f"**Recommended Action:** {result['recommended_action']}")
     
     # Plotly Survival Curve
-    curve_df = result['survival_curve']
-    fig = go.Figure()
-   # Convert survival curve cleanly to a 1D list/array
-    y_values = (curve_df.to_numpy().ravel() * 100).tolist()
-    x_timeline = list(curve_df.index)
+    raw_curve = result['survival_curve']
+    x_timeline, y_values = normalize_survival_curve(raw_curve)
 
+    # 2. Render Plotly Curve
+    fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=x_timeline, 
         y=y_values,
         mode='lines+markers',
         name='Survival Probability',
-        line=dict(color='#0284c7', width=3)
+        line=dict(color='#0284c7', width=3),
+        marker=dict(size=4, color='#38bdf8')
     ))
     fig.update_layout(
         title=f"Survival Trajectory (Active: {tenure} Mo | Horizon: +{forecast_horizon} Mo)",
