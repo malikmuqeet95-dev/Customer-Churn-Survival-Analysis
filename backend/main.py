@@ -31,7 +31,7 @@ FRONTEND_DIR = PROJECT_ROOT / "frontend"
 # ============================================================
 
 app = FastAPI(
-    title="Customer Churn Survival MLOps API",
+    title="Customer Churn Survival API",
     description="FastAPI backend serving customer churn survival predictions.",
     version="1.0.0",
 )
