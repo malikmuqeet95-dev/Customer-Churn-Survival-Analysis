@@ -5,4 +5,3 @@ numpy
 lifelines
 scikit-learn
 joblib
-streamlit
