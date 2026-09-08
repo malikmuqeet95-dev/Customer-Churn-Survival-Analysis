@@ -5,7 +5,7 @@ from backend.src.survival_predictor import SurvivalPredictor
 
 st.set_page_config(page_title="Churn Survival Intelligence", layout="wide")
 
-st.title("⚡ ChurnGuard: Customer Retention Survival AI")
+st.title("⚡ Customer Churn Survival Analysis AI")
 st.markdown("Dynamic Time-to-Event Survival Forecasting Engine")
 
 
